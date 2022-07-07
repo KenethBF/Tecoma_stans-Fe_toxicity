@@ -25,7 +25,9 @@ df<-na.omit(df)
 
 
 #------------------------------------------------
-pdf(file = "Results/Fig. Ternary plot.pdf", width = 8, height = 6)
+library(extrafont)
+
+pdf(file = "Results/Fig. Ternary plot.pdf", width = 10, height = 7)
 par(mfrow=c(1,1),mgp = c(1.75,0.5,0), mar = c(1,3,1,1))
 a<-ggtern(data = df, aes(x = RMR, y = SMR, z = LMR)) +
   #the layers
@@ -52,9 +54,10 @@ a<-ggtern(data = df, aes(x = RMR, y = SMR, z = LMR)) +
   labs(size = 'TDM',
        fill = "NAR") +
   ggtitle('') 
-a<-a + scale_T_continuous(limits=c(.0,1))  + #(A,BC)
-  scale_L_continuous(limits=c(0,1))  +    #(B,AC)
-  scale_R_continuous(limits=c(0,1))       #(B,C)
+a<-a + scale_T_continuous(limits=c(.0,0.6))  + #(A,BC)
+  scale_L_continuous(limits=c(0.0,0.6))  +    #(B,AC)
+  scale_R_continuous(limits=c(0.4,1))       #(B,C)
+
 print(a)
 dev.off()
 #------------------------------------------------
@@ -120,8 +123,6 @@ ggpairs(d, columns = c("LDM","RDM","SDM","SLA","NAR"), title = "", upper = list(
 dev.off()
 #------------------------------------------------
 
-
-
 #------------------------------------------------
 # Fig. Relationships between DAP versus Height
 #------------------------------------------------
@@ -131,7 +132,7 @@ lm_eqn = function(df, x, y){
   summary_m<-summary(m)
   pvalue<-pf(summary_m$fstatistic[1],summary_m$fstatistic[2], summary_m$fstatistic[3],lower.tail = FALSE)
   pvalue<-ifelse(pvalue<0.001,"***", ifelse(pvalue<0.01, "**", ifelse(pvalue<0.05, "*","n.s.")))
-  eq <- substitute(LDM == a + b %.% RDM*","~~italic(R)^2~"="~r2*p,
+  eq <- substitute(NAR == a + b %.% RGR*","~~italic(R)^2~"="~r2*p,
                    list(a = format(coef(m)[1], digits = 3),
                         b = format(coef(m)[2], digits = 3),
                         r2 = format(summary(m)$r.squared, digits = 2),
@@ -157,50 +158,12 @@ pmain<-pmain + annotate("text", x=0, y=0.25, label=lm_eqn(Hoja_datos_proyecto[Ho
 pmain<-pmain + annotate("text", x=0, y=0.23, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro","NAR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro","RGR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
 pmain<-pmain + annotate("text", x=0, y=0.21, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio","NAR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio","RGR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
 pmain<-pmain + annotate("text", x=0, y=0.19, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro","NAR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro","RGR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
-pmain
 
 pmain<-pmain + theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
                                   axis.text.x = element_text(color="black", size=12, angle=0),
                                   axis.text.y = element_text(color="black", size=12, angle=0), text = element_text(size = 13))
 pmain <- pmain +ggpubr::color_palette("jco")
-
-print(pmain)
-
-##### RMR vs LMR
-bmain <- ggplot(Hoja_datos_proyecto, aes(x = RMR, y = LMR, color = Trat))+
-  geom_point(aes(size = TDM), alpha = 0.5, ) +
-  ggpubr::color_palette("jco")+
-  geom_smooth(method ="lm", formula = y ~ x) +
-  ggpubr::color_palette("jco")+
-  scale_size(expression(paste("TDM",)), range = c(0.1, 10)) + 
-  xlab(label="RMR") + ylab(label="LMR") +
-  # Adjust the range of points size
-  ggpubr::color_palette("jco")
-
-#pmain<-pmain + geom_text(data=piangua2[1,],aes(x = x, y = y,label =label), size=6, family="Times", parse = TRUE)
-
-bmain<-pmain + annotate("text", x=0, y=0.25, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Control",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Control","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Control","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
-bmain<-pmain + annotate("text", x=0, y=0.23, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
-bmain<-pmain + annotate("text", x=0, y=0.21, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
-bmain<-pmain + annotate("text", x=0, y=0.19, label=lm_eqn(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
-
-bmain
-
-bmain<-pmain + theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
-                                  panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
-                                  axis.text.x = element_text(color="black", size=12, angle=0),
-                                  axis.text.y = element_text(color="black", size=12, angle=0), text = element_text(size = 13))
-bmain <- pmain +ggpubr::color_palette("jco")
-print(bmain)
-
-
-
-
-
-
-
-
 
 
 # Marginal densities along x axis
@@ -231,16 +194,88 @@ p1 <- insert_xaxis_grob(p1, xdens, grid::unit(.175, "null"), position = "top")
 p2 <- insert_yaxis_grob(p1, ydens2, grid::unit(.3, "null"), position = "right")
 p2 <- insert_yaxis_grob(p2, ydens, grid::unit(.175, "null"), position = "right")
 ggdraw(p2)
+
+#####################################################
+# Fig. Relationships between DAP versus Height
+
+lm_eqn1 = function(df, x, y){
+  m=lm(x ~ y, df)#3rd degree polynomial
+  summary_m<-summary(m)
+  pvalue<-pf(summary_m$fstatistic[1],summary_m$fstatistic[4], summary_m$fstatistic[6],lower.tail = FALSE)
+  pvalue<-ifelse(pvalue<0.001,"***", ifelse(pvalue<0.01, "**", ifelse(pvalue<0.05, "*","n.s.")))
+  eq <- substitute(RMR == a + b %.% LMR*","~~italic(R)^2~"="~r2*p,
+                   list(a = format(coef(m)[1], digits = 3),
+                        b = format(coef(m)[4], digits = 3),
+                        r2 = format(summary(m)$r.squared, digits = 2),
+                        p = format(pvalue)))
+  as.character(as.expression(eq))
+}
+
+
+
+##### RMR vs LMR
+bmain <- ggplot(Hoja_datos_proyecto, aes(x = RMR, y = LMR, color = Trat))+
+  geom_point(aes(size = TDM), alpha = 0.5, ) +
+  ggpubr::color_palette("jco")+
+  geom_smooth(method ="lm", formula = y ~ x) +
+  ggpubr::color_palette("jco")+
+  scale_size(expression(paste("TDM",)), range = c(0.1, 10)) + 
+  xlab(label="RMR") + ylab(label="LMR") +
+  # Adjust the range of points size
+  ggpubr::color_palette("jco")
+
+
+
+#bmain<-bmain + geom_text(data=piangua2[1,],aes(x = x, y = y,label =label), size=6, family="Times", parse = TRUE)
+
+bmain<-bmain + annotate("text", x=0, y=0.25, label=lm_eqn1(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Control",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Control","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Control","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
+bmain<-bmain + annotate("text", x=0, y=0.23, label=lm_eqn1(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Hierro","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
+bmain<-bmain + annotate("text", x=0, y=0.21, label=lm_eqn1(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
+bmain<-bmain + annotate("text", x=0, y=0.19, label=lm_eqn1(Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro",],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro","RMR"],Hoja_datos_proyecto[Hoja_datos_proyecto$Trat=="Silicio+Hierro","LMR"]), hjust=0, size=4,family="Times", face="italic", parse=TRUE)
+
+bmain<-bmain + theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                                  panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
+                                  axis.text.x = element_text(color="black", size=12, angle=0),
+                                  axis.text.y = element_text(color="black", size=12, angle=0), text = element_text(size = 13))
+bmain <- bmain +ggpubr::color_palette("jco")
+
+# Marginal densities along x axis
+xdens3 <- axis_canvas(bmain, axis = "x")+
+  geom_density(data = Hoja_datos_proyecto, aes(x = RMR, fill = Trat),
+               alpha = 0.7, size = 0.7)+
+  ggpubr::fill_palette("jco")
+
+xdens4 <- axis_canvas(bmain, axis = "x")+
+  geom_boxplot(data = Hoja_datos_proyecto, aes(x = RMR, fill = Trat),
+               alpha = 0.7, size = 0.7)+
+  ggpubr::fill_palette("jco")
+# Marginal densities along y axis
+# Need to set coord_flip = TRUE, if you plan to use coord_flip()
+ydens3 <- axis_canvas(bmain, axis = "y", coord_flip = TRUE)+
+  geom_density(data = Hoja_datos_proyecto, aes(x = LMR, fill = Trat),
+               alpha = 0.7, size = 0.7)+
+  coord_flip()+
+  ggpubr::fill_palette("jco")
+
+ydens4 <- axis_canvas(bmain, axis = "y", coord_flip = TRUE)+
+  geom_boxplot(data = Hoja_datos_proyecto, aes(x = LMR, fill = Trat),
+               alpha = 0.7, size = 0.7)+
+  coord_flip()+
+  ggpubr::fill_palette("jco")
+b1 <- insert_xaxis_grob(bmain, xdens4, grid::unit(.3, "null"), position = "top")
+b1 <- insert_xaxis_grob(b1, xdens3, grid::unit(.175, "null"), position = "top")
+b2 <- insert_yaxis_grob(b1, ydens4, grid::unit(.3, "null"), position = "right")
+b2 <- insert_yaxis_grob(b2, ydens3, grid::unit(.175, "null"), position = "right")
+ggdraw(b2)
+
+
+
 #------------------------------------------------
 pdf("Results/Fig. NAR versus RGR.pdf", width=10/1.157, height=6/1.157)
 ggdraw(p2)
+ggdraw(b2)
 dev.off()
 #------------------------------------------------
-
-
-
-
-
 
 
 
@@ -253,7 +288,7 @@ df.PCA<-Hoja_datos_proyecto[,-c(1)]
 df.PCA = df.PCA[with(df.PCA, order(-TDM)), ]
 df.PCA<-na.omit(df.PCA)
 
-res.pca1 <- prcomp(df.PCA[, c(-1)], scale = TRUE) # Remove Treatment and TDM
+res.pca1 <- prcomp(df.PCA[, c(-1,-2,-3,-4,-5,-6,-7,-8)], scale = TRUE) # Remove Treatment and TDM
 quali.sup <- as.factor(df.PCA[,1]) # Only treatment
 
 a1<-fviz_pca_ind(res.pca1, geom = c("point"), title="",
